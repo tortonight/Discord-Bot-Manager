@@ -1,0 +1,40 @@
+{
+  "name": "discord-bot-manager",
+  "version": "1.0.0",
+  "description": "Dashboard Manager for Discord Bots",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:exe": "node build.js",
+    "pack": "electron-builder --win --x64"
+  },
+  "author": "Bot Admin",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.botadmin.manager",
+    "productName": "Discord Bot Manager",
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "bot-manager.js",
+      "public/**/*",
+      "build/icon.png"
+    ]
+  }
+}

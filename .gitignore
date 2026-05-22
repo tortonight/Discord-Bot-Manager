@@ -1,0 +1,8 @@
+node_modules/
+release/
+dist/
+*.exe
+*.msi
+*.dll
+*.log
+.env

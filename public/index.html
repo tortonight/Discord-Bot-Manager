@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+  <title>Discord Bot Manager</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    #loading-screen {
+      position: fixed; inset: 0; z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: #0a0a1a; color: #8b7cf7; font-family: 'Segoe UI', sans-serif;
+      transition: opacity 0.5s ease;
+    }
+    #loading-screen.hidden { opacity: 0; pointer-events: none; }
+    .loading-spinner { width: 40px; height: 40px; border: 3px solid rgba(139,124,247,0.15); border-top-color: #8b7cf7; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
+    .loading-text { font-size: 14px; color: #9895b0; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div id="loading-screen">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading Discord Bot Manager...</div>
+  </div>
+  <script>
+    window.onerror = function(msg, url, line) {
+      var ls = document.getElementById('loading-screen');
+      if (ls) {
+        ls.innerHTML = '<div style="color:#f87171;text-align:center;padding:40px">' +
+          '<h2 style="font-size:20px;margin-bottom:12px">JavaScript Error</h2>' +
+          '<p style="color:#9895b0;font-size:13px">' + msg + '</p>' +
+          '<p style="color:#6b6890;font-size:12px;margin-top:8px">Line ' + line + '</p></div>';
+      }
+    };
+    document.addEventListener('DOMContentLoaded', function(){
+      var ls = document.getElementById('loading-screen');
+      if (ls) { ls.classList.add('hidden'); setTimeout(function(){ ls.style.display = 'none'; }, 500); }
+    });
+    setTimeout(function(){
+      var ls = document.getElementById('loading-screen');
+      if (ls && !ls.classList.contains('hidden')) {
+        ls.innerHTML = '<div style="color:#f87171;text-align:center;padding:40px">' +
+          '<h2 style="font-size:20px;margin-bottom:12px">App Failed to Start</h2>' +
+          '<p style="color:#9895b0;font-size:13px">The page loaded but the renderer may have crashed.</p>' +
+          '<p style="color:#6b6890;font-size:12px;margin-top:8px">Check console for errors, then restart.</p></div>';
+      }
+    }, 8000);
+  </script>
+
+  <div class="app-container">
+    <div class="titlebar" id="titlebar">
+      <div class="titlebar-drag">
+        <div class="titlebar-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="4"/>
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 7v2M12 15v2M7 12h2M15 12h2"/>
+          </svg>
+        </div>
+        <span class="titlebar-text">Discord Bot Manager</span>
+      </div>
+      <div class="titlebar-controls">
+        <button class="titlebar-btn" onclick="window.electronAPI?.window.minimize()" id="btn-minimize" title="Minimize">
+          <svg viewBox="0 0 12 12" width="12" height="12"><rect y="5" width="12" height="1.5" fill="currentColor"/></svg>
+        </button>
+        <button class="titlebar-btn" onclick="window.electronAPI?.window.maximize()" id="btn-maximize" title="Maximize">
+          <svg viewBox="0 0 12 12" width="12" height="12"><rect width="10" height="10" x="1" y="1" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+        </button>
+        <button class="titlebar-btn titlebar-close" onclick="window.electronAPI?.window.close()" id="btn-close" title="Close">
+          <svg viewBox="0 0 12 12" width="12" height="12"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.2"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="main-layout">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2"/>
+              <path d="M8 21h8M12 17v4"/>
+              <circle cx="9" cy="10" r="1.5" fill="currentColor" stroke="none"/>
+              <circle cx="15" cy="10" r="1.5" fill="currentColor" stroke="none"/>
+            </svg>
+          </div>
+          <span class="logo-text">BotAdmin</span>
+        </div>
+        <nav class="sidebar-nav">
+          <a class="nav-item active" data-page="dashboard" onclick="switchPage('dashboard')">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/>
+              <rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>
+            </svg>
+            <span>Dashboard</span>
+          </a>
+          <a class="nav-item" data-page="bots" onclick="switchPage('bots')">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M12 2v3"/>
+              <circle cx="9" cy="9" r="1.5" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1.5" fill="currentColor" stroke="none"/>
+            </svg>
+            <span>Bots</span>
+          </a>
+          <a class="nav-item" data-page="logs" onclick="switchPage('logs')">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h12v4H4z"/></svg>
+            <span>Logs</span>
+          </a>
+          <a class="nav-item" data-page="settings" onclick="switchPage('settings')">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+            <span>Settings</span>
+          </a>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="status-dot" id="statusDot"></div>
+          <span id="statusText">Ready</span>
+        </div>
+      </aside>
+
+      <main class="content" id="mainContent">
+        <div class="page active" id="page-dashboard">
+          <div class="page-header"><div><h1 class="page-title">Dashboard</h1><p class="page-subtitle">Overview of your bot fleet</p></div></div>
+          <div class="stats-grid" id="statsGrid">
+            <div class="stat-card glass"><div class="stat-icon stat-icon-total"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><div class="stat-info"><span class="stat-value" id="statTotalValue">0</span><span class="stat-label">Total Bots</span></div></div>
+            <div class="stat-card glass"><div class="stat-icon stat-icon-running"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor" stroke="none"/></svg></div><div class="stat-info"><span class="stat-value" id="statRunningValue">0</span><span class="stat-label">Running</span></div></div>
+            <div class="stat-card glass"><div class="stat-icon stat-icon-stopped"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/><rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/></svg></div><div class="stat-info"><span class="stat-value" id="statStoppedValue">0</span><span class="stat-label">Stopped</span></div></div>
+            <div class="stat-card glass"><div class="stat-icon stat-icon-memory"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h12v8H6z" fill="currentColor" stroke="none" opacity="0.3"/></svg></div><div class="stat-info"><span class="stat-value" id="statMemoryValue">0%</span><span class="stat-label">Memory Used</span></div></div>
+          </div>
+          <div class="section"><div class="section-header"><h2 class="section-title">Quick Actions</h2></div>
+          <div class="quick-actions glass">
+            <button class="action-btn primary" onclick="startAll()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Start All</button>
+            <button class="action-btn warning" onclick="stopAll()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg> Stop All</button>
+            <button class="action-btn info" onclick="restartAll()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg> Restart All</button>
+            <button class="action-btn success" onclick="addBot()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Bot</button>
+          </div></div>
+          <div class="section"><div class="section-header"><h2 class="section-title">System Resources</h2></div>
+          <div class="sys-grid">
+            <div class="sys-card glass"><div class="sys-label">CPU</div><div class="sys-bar-bg"><div class="sys-bar cpu-bar" id="cpuBar" style="width:0%"></div></div><div class="sys-value" id="cpuValue">0%</div></div>
+            <div class="sys-card glass"><div class="sys-label">Memory</div><div class="sys-bar-bg"><div class="sys-bar mem-bar" id="memBar" style="width:0%"></div></div><div class="sys-value" id="memValue">0%</div></div>
+          </div></div>
+        </div>
+
+        <div class="page" id="page-bots">
+          <div class="page-header"><div><h1 class="page-title">Bot Management</h1></div>
+          <div class="page-actions"><button class="btn glass primary" onclick="addBot()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Bot</button></div></div>
+          <div class="bots-grid" id="botsContainer"><div class="empty-state">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            <p>No bots configured yet</p>
+            <button class="btn glass primary" onclick="addBot()">Add Your First Bot</button>
+          </div></div>
+        </div>
+
+        <div class="page" id="page-bot-detail">
+          <div class="bot-detail-header">
+            <button class="btn glass back-btn" onclick="closeBotDetail()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+            <div class="bot-detail-info">
+              <div class="bot-detail-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+              <div><h2 id="detailBotName">Bot Name</h2><span class="bot-status" id="detailBotStatus"><span class="bot-status-dot stopped"></span> Stopped</span></div>
+            </div>
+            <div class="bot-detail-actions" id="detailActions">
+              <button class="btn btn-start" onclick="detailControl('start')" id="detailBtnStart"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Start</button>
+              <button class="btn btn-stop" onclick="detailControl('stop')" id="detailBtnStop"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg> Stop</button>
+              <button class="btn btn-restart" onclick="detailControl('restart')" id="detailBtnRestart"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg> Restart</button>
+              <button class="btn btn-update" onclick="detailControl('update')" id="detailBtnUpdate"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg> Update</button>
+            </div>
+          </div>
+          <div class="bot-resources glass" id="botResources" style="display:none">
+            <div class="res-item"><span class="res-label">CPU</span><div class="res-bar-bg"><div class="res-bar cpu-bar" id="botCpuBar" style="width:0%"></div></div><span class="res-value" id="botCpuValue">0%</span></div>
+            <div class="res-item"><span class="res-label">Memory</span><div class="res-bar-bg"><div class="res-bar mem-bar" id="botMemBar" style="width:0%"></div></div><span class="res-value" id="botMemValue">0 MB</span></div>
+          </div>
+          <div class="bot-tabs" id="botTabs">
+            <button class="tab active" data-tab="console" onclick="switchBotTab('console')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg> Console</button>
+            <button class="tab" data-tab="startup" onclick="switchBotTab('startup')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Startup</button>
+            <button class="tab" data-tab="files" onclick="switchBotTab('files')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg> Files</button>
+            <button class="tab" data-tab="config" onclick="switchBotTab('config')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg> Config</button>
+            <button class="tab" data-tab="network" onclick="switchBotTab('network')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg> Network</button>
+            <button class="tab" data-tab="schedule" onclick="switchBotTab('schedule')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Schedule</button>
+            <button class="tab" data-tab="backup" onclick="switchBotTab('backup')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2M7 10l5 5 5-5M12 15V3"/></svg> Backup</button>
+          </div>
+          <div class="tab-content-wrapper">
+            <div class="tab-content active" id="tab-console">
+              <div class="terminal-wrapper glass">
+                <div class="terminal-header"><span>Console Output</span><div class="terminal-actions"><button class="btn glass" onclick="clearDetailLogs()">Clear</button><button class="btn glass" onclick="toggleScrollLock()" id="scrollLockBtn">Auto-scroll</button></div></div>
+                <div class="terminal" id="detailConsole"><div class="terminal-placeholder">Loading...</div></div>
+                <div class="terminal-input-row"><span class="terminal-prompt">></span><input type="text" class="terminal-input" id="consoleInput" placeholder="Send command..." onkeydown="if(event.key==='Enter')sendConsoleCommand()"><button class="btn glass" onclick="sendConsoleCommand()">Send</button></div>
+              </div>
+            </div>
+            <div class="tab-content" id="tab-startup">
+              <div class="settings-section glass"><h3>Startup Configuration</h3>
+                <div class="setting-row"><div class="setting-info"><span class="setting-name">Entry Point</span><span class="setting-desc">Main JavaScript file</span></div><input type="text" id="startup-entry" class="setting-input" style="width:200px"></div>
+                <div class="setting-row"><div class="setting-info"><span class="setting-name">Node Arguments</span><span class="setting-desc">e.g. --max-old-space-size=512</span></div><input type="text" id="startup-args" class="setting-input" style="width:280px"></div>
+                <div class="setting-row"><div class="setting-info"><span class="setting-name">Working Directory</span><span class="setting-desc" id="startup-path">-</span></div></div>
+                <div class="setting-row"><div class="setting-info"><span class="setting-name">Auto-restart on crash</span><span class="setting-desc">Automatically restart if bot exits with error</span></div>
+                  <label class="toggle"><input type="checkbox" id="startup-autorestart" checked><span class="toggle-slider"></span></label></div>
+                <button class="btn primary" onclick="saveStartupConfig()" style="margin-top:16px;width:100%;justify-content:center">Save Startup Config</button>
+              </div>
+              <div class="settings-section glass" style="margin-top:12px"><h3>Environment Variables</h3><div id="startup-env-container"></div>
+                <button class="btn glass" onclick="addStartupEnvVar()" style="margin-top:10px">+ Add Variable</button>
+                <button class="btn primary" onclick="saveStartupConfig()" style="margin-top:12px;width:100%;justify-content:center">Save Environment</button>
+              </div>
+            </div>
+            <div class="tab-content" id="tab-files">
+              <div class="file-manager"><div class="file-toolbar glass">
+                <button class="btn glass" onclick="refreshFileList()">⟳ Refresh</button>
+                <button class="btn glass" onclick="createNewFile()">+ New File</button>
+                <button class="btn glass" onclick="createNewFolder()">+ New Folder</button>
+              </div>
+              <div class="file-breadcrumb glass" id="fileBreadcrumb"><span>root</span></div>
+              <div class="file-list glass" id="fileList"><div class="terminal-placeholder" style="padding:30px">Loading files...</div></div></div>
+            </div>
+            <div class="tab-content" id="tab-config">
+              <div class="config-grid">
+                <div class="config-card glass" onclick="openConfigEditor('package.json')"><div class="config-card-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><div class="config-card-name">package.json</div><div class="config-card-desc">Dependencies</div></div></div>
+                <div class="config-card glass" onclick="openConfigEditor('.env')"><div class="config-card-icon" style="color:var(--warning)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div><div><div class="config-card-name">.env</div><div class="config-card-desc">Environment variables</div></div></div>
+                <div class="config-card glass" onclick="openConfigEditor('config.json')"><div class="config-card-icon" style="color:var(--info)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></div><div><div class="config-card-name">config.json</div><div class="config-card-desc">Bot configuration</div></div></div>
+                <div class="config-card glass" onclick="npmInstall()"><div class="config-card-icon" style="color:var(--success)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></div><div><div class="config-card-name">npm install</div><div class="config-card-desc">Install dependencies</div></div></div>
+              </div>
+              <div class="settings-section glass" style="margin-top:16px"><h3>File Editor</h3>
+                <div class="config-editor-toolbar"><span id="configEditorFilename" style="font-weight:500;flex:1">Select a file</span><button class="btn glass" onclick="saveConfigFile()" id="configSaveBtn" style="display:none">Save</button></div>
+                <textarea class="config-editor" id="configEditor" spellcheck="false" placeholder="Click a config file above to edit..."></textarea>
+              </div>
+            </div>
+            <div class="tab-content" id="tab-network">
+              <div class="settings-section glass"><h3>Port Bindings</h3><div id="network-ports-container"></div><button class="btn glass" onclick="addNetworkPort()">+ Add Port</button><button class="btn primary" onclick="saveNetworkConfig()" style="margin-top:12px;width:100%;justify-content:center">Save Network</button></div>
+              <div class="settings-section glass" style="margin-top:16px"><h3>Webhooks</h3><div id="network-webhooks-container"></div><button class="btn glass" onclick="addNetworkWebhook()">+ Add Webhook</button><button class="btn primary" onclick="saveNetworkConfig()" style="margin-top:12px;width:100%;justify-content:center">Save Webhooks</button></div>
+            </div>
+            <div class="tab-content" id="tab-schedule">
+              <div class="settings-section glass"><h3>Scheduled Tasks</h3><div id="schedule-container"><div class="terminal-placeholder" style="padding:20px">No scheduled tasks</div></div><button class="btn glass" onclick="addSchedule()">+ Add Task</button><button class="btn primary" onclick="saveScheduleConfig()" style="margin-top:12px;width:100%;justify-content:center">Save Schedules</button></div>
+            </div>
+            <div class="tab-content" id="tab-backup">
+              <div class="settings-section glass"><h3>Backup</h3>
+                <button class="btn primary" onclick="createBackup()" style="width:100%;justify-content:center;margin-bottom:16px">Create Backup Now</button>
+                <div id="backup-list"><div class="empty-state" style="padding:30px"><p>No backups yet</p></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page" id="page-logs">
+          <div class="page-header"><div><h1 class="page-title">Logs</h1></div>
+          <div class="page-actions"><select class="log-filter glass" id="logBotFilter" onchange="filterLogs()"><option value="all">All Bots</option></select><button class="btn glass" onclick="clearLogs()">Clear</button></div></div>
+          <div class="log-container glass" id="logContainer"><div class="log-placeholder">Loading...</div></div>
+        </div>
+
+        <div class="page" id="page-settings">
+          <div class="page-header"><div><h1 class="page-title">Settings</h1></div></div>
+          <div class="settings-section glass"><h3>General</h3>
+            <div class="setting-row"><div class="setting-info"><span class="setting-name">Start bots on app launch</span><span class="setting-desc">Auto-start when application opens</span></div><label class="toggle"><input type="checkbox" id="autoStartBots"><span class="toggle-slider"></span></label></div>
+            <div class="setting-row"><div class="setting-info"><span class="setting-name">Confirm before actions</span><span class="setting-desc">Show confirmation dialog</span></div><label class="toggle"><input type="checkbox" id="confirmActions" checked><span class="toggle-slider"></span></label></div>
+          </div>
+          <div class="settings-section glass"><h3>About</h3><div class="setting-row"><div class="setting-info"><span class="setting-name">Discord Bot Manager</span><span class="setting-desc">Version 1.0.0</span></div></div></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal glass" id="modalContent" onclick="event.stopPropagation()">
+      <div class="modal-header"><h2 class="modal-title" id="modalTitle">Modal</h2><button class="modal-close" onclick="closeModal()">&times;</button></div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+  <script src="renderer.js"></script>
+</body>
+</html>
