@@ -74,6 +74,12 @@ Discord Bot Manager is a desktop application that provides a graphical interface
 |-----------|---------------------|--------------|
 | Fleet overview with stat cards | Real-time terminal output | Full file browser with breadcrumb |
 
+![_](https://github.com/tortonight/Discord-Bot-Manager/blob/main/image/Screenshot-1.png)
+
+![](https://github.com/tortonight/Discord-Bot-Manager/blob/main/image/Screenshot-2.png)
+
+![](https://github.com/tortonight/Discord-Bot-Manager/blob/main/image/Screenshot-3.png)
+
 ---
 
 ## Tech Stack
